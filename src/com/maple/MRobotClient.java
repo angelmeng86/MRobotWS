@@ -16,6 +16,9 @@ import java.nio.ByteBuffer;
 
 public class MRobotClient extends WebSocketClient {
 
+	public boolean running = true;
+	private boolean logined = false;
+	
     public MRobotClient(URI serverUri, Draft draft) {
         super(serverUri, draft);
     }
@@ -29,7 +32,7 @@ public class MRobotClient extends WebSocketClient {
         JSONObject data = new JSONObject();
         data.put("deviceType", DeviceTool.getDeviceType());
         data.put("deviceId", DeviceTool.getDeviceId());
-        String request = DataUtils.jsonRequest(DataUtils.getUUID32(), RequestModel.DeviceLoginOP, data.toString());
+        String request = DataUtils.jsonRequest(DataUtils.getUUID32(), RequestModel.DeviceLoginOP, data);
         send(request);
         System.out.println("new connection opened");
     }
@@ -54,26 +57,38 @@ public class MRobotClient extends WebSocketClient {
     public void onMessage(String message) {
         System.out.println("received message: " + message);
         try {
-            RequestModel request = JSON.parseObject(message, RequestModel.class);
-            if(request != null && request.getOp() != null) {
-                if(request.getOp().equals(RequestModel.ShellExecOP)) {
-                    JSONObject param = JSON.parseObject(request.getParam());
-                    String cmd = param.getString("cmd");
-                    String result = DeviceTool.execCommand(cmd);
-                    
-                    JSONObject resultObj = new JSONObject();
-                    resultObj.put("result", result);
-                    String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj.toString());
-                    send(response);
-                }
-                else {
-                    String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
-                    send(response);
-                }
-            }
-            else {
-                System.out.println("parse request error.");
-            }
+        	if(logined) {
+        		RequestModel request = JSON.parseObject(message, RequestModel.class);
+	            if(request != null && request.getOp() != null) {
+	                if(request.getOp().equals(RequestModel.ShellExecOP)) {
+	                    JSONObject param = request.getParam();
+	                    String cmd = param.getString("cmd");
+	                    String result = DeviceTool.execCommand(cmd);
+	
+	                    JSONObject resultObj = new JSONObject();
+	                    resultObj.put("result", result);
+	                    String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
+	                    send(response);
+	                }
+	                else {
+	                    String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
+	                    send(response);
+	                }
+	            }
+	            else {
+	                System.out.println("parse request error.");
+	            }
+        	}
+        	else {
+        		ResponseModel response = JSON.parseObject(message, ResponseModel.class);
+	            if(response != null && response.getCode() == 0) {
+	            	logined = true;
+	            	System.out.println("login success.");
+	            }
+	            else {
+	            	running = false;
+	            }
+        	}
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -99,11 +114,13 @@ public class MRobotClient extends WebSocketClient {
         System.out.println("DeviceId:" +  DeviceTool.getDeviceId());
         System.out.println("DeviceType:" +  DeviceTool.getDeviceType());
         
-        WebSocketClient client = new MRobotClient(new URI("ws://www.ucicloud.com:8085"));
+        MRobotClient client = new MRobotClient(new URI("ws://www.ucicloud.com:8085"));
         client.connect();
-        while(true) {
+        while(client.running) {
         	Thread.sleep(1000);
         }
+        
+        System.out.println("MRobotClient exit");
     }
 
 }

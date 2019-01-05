@@ -1,10 +1,12 @@
 package com.maple.model;
 
+import com.alibaba.fastjson.JSONObject;
+
 public class ResponseModel {
     private String id;
     private int code;
     private String errorMsg;
-    private String data;
+    private JSONObject data;
     
     public String getId() {
         return id;
@@ -24,10 +26,10 @@ public class ResponseModel {
     public void setErrorMsg(String errorMsg) {
         this.errorMsg = errorMsg;
     }
-    public String getData() {
+    public JSONObject getData() {
         return data;
     }
-    public void setData(String data) {
+    public void setData(JSONObject data) {
         this.data = data;
     }
 

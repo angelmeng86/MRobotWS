@@ -3,14 +3,17 @@ package com.maple;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.maple.device.DeviceTool;
 import com.maple.model.ConnSession;
 import com.maple.model.RequestModel;
+import com.maple.model.ResponseModel;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -19,6 +22,7 @@ import org.java_websocket.server.WebSocketServer;
 public class MRobotServer extends WebSocketServer {
     
     private Map<WebSocket, ConnSession> sessions = new HashMap <>(); 
+
     public String masterKey = "MRobot2019";
 
 	public MRobotServer(InetSocketAddress address) {
@@ -49,7 +53,7 @@ public class MRobotServer extends WebSocketServer {
 	            if(request != null && request.getOp() != null) {
 	               if(session == null) {
 	                    if(request.getOp().equals(RequestModel.DeviceLoginOP)) {
-	                        JSONObject param = JSON.parseObject(request.getParam());
+	                        JSONObject param = request.getParam();
 	                        String deviceType = param.getString("deviceType");
 	                        String deviceId = param.getString("deviceId");
 	                        
@@ -71,13 +75,14 @@ public class MRobotServer extends WebSocketServer {
 	                        }
 	                    }
 	                    else if(request.getOp().equals(RequestModel.AdminLoginOP)) {
-	                        JSONObject param = JSON.parseObject(request.getParam());
+	                        JSONObject param = request.getParam();
                             String key = param.getString("masterKey");
                             
-                            if(key != null && !key.equals(masterKey))
+                            if(key != null && key.equals(masterKey))
                             {
                                 session = new ConnSession();
                                 session.setType(ConnSession.AdminType);
+                                session.setWaitQueue(new HashSet<String>());
                                 
                                 JSONObject data = new JSONObject();
                                 JSONArray online = new JSONArray();
@@ -90,7 +95,7 @@ public class MRobotServer extends WebSocketServer {
                                 
                                 sessions.put(conn, session);
                                 
-                                String response = DataUtils.jsonResponse(request.getId(), 0, null, data.toString());
+                                String response = DataUtils.jsonResponse(request.getId(), 0, null, data);
                                 conn.send(response);
                             }
                             else {
@@ -104,19 +109,28 @@ public class MRobotServer extends WebSocketServer {
 	                    }
 	                }
 	                else {
-	                    //TODO
-	                    if(request.getOp().equals(RequestModel.ShellExecOP)) {
-	                        JSONObject param = JSON.parseObject(request.getParam());
-	                        String cmd = param.getString("cmd");
-	                        String result = DeviceTool.execCommand(cmd);
+	                    if(request.getDestDevice() != null && 
+	                    		request.getOp().equals(RequestModel.ShellExecOP)) {
+	                    	boolean finded = false;
+	                    	for(Entry<WebSocket, ConnSession> s : sessions.entrySet()) {
+                                if(s.getValue().getType() == ConnSession.DeviceType && s.getValue().getDeviceId().equals(request.getDestDevice())) {
+                                	Set<String> set = session.getWaitQueue();
+                                	synchronized (set) {
+        								set.add(request.getId());
+        							}
+                                	s.getKey().send(message);
+                                	finded = true;
+                                    break;
+                                }
+                            }
 	                        
-	                        JSONObject resultObj = new JSONObject();
-	                        resultObj.put("result", result);
-	                        String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj.toString());
-	                        conn.send(response);
+	                    	if(!finded) {
+	                    		String response = DataUtils.jsonResponse(request.getId(), -3, "destDevice不存在");
+		                        conn.send(response);
+	                    	}
 	                    }
 	                    else {
-	                        String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
+	                        String response = DataUtils.jsonResponse(request.getId(), -1, "op或destDevice无效");
 	                        conn.send(response);
 	                    }
 	                }
@@ -126,26 +140,33 @@ public class MRobotServer extends WebSocketServer {
 	                System.out.println("parse request error.");
 	            }
 		    }
-            RequestModel request = JSON.parseObject(message, RequestModel.class);
-            if(request != null && request.getOp() != null) {
-                if(request.getOp().equals(RequestModel.ShellExecOP)) {
-                    JSONObject param = JSON.parseObject(request.getParam());
-                    String cmd = param.getString("cmd");
-                    String result = DeviceTool.execCommand(cmd);
-                    
-                    JSONObject resultObj = new JSONObject();
-                    resultObj.put("result", result);
-                    String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj.toString());
-                    conn.send(response);
-                }
-                else {
-                    String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
-                    conn.send(response);
-                }
-            }
-            else {
-                System.out.println("parse request error.");
-            }
+		    else {
+		    	ResponseModel response = JSON.parseObject(message, ResponseModel.class);
+	            if(response != null && response.getId() != null) {
+	            	boolean finded = false;
+                	for(Entry<WebSocket, ConnSession> s : sessions.entrySet()) {
+                        if(s.getValue().getType() == ConnSession.AdminType && 
+                        		s.getValue().getWaitQueue().contains(response.getId())) {
+                        	Set<String> set = s.getValue().getWaitQueue();
+                        	synchronized (set) {
+								if(set.contains(response.getId())) {
+									set.remove(response.getId());
+									finded = true;
+									s.getKey().send(message);
+									break;
+								}
+							}
+                        }
+                    }
+                	if(!finded) {
+                		//TODO 服务端响应处理
+                		System.out.println("服务端响应处理");
+                	}
+	            }
+	            else {
+	                System.out.println("parse request error.");
+	            }
+		    }
         }
         catch(Exception e) {
             e.printStackTrace();

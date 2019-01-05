@@ -1,5 +1,7 @@
 package com.maple.model;
 
+import com.alibaba.fastjson.JSONObject;
+
 public class RequestModel {
     public static final String DeviceLoginOP = "DeviceLogin";
     public static final String AdminLoginOP = "AdminLogin";
@@ -8,7 +10,7 @@ public class RequestModel {
     private String id;
     private String destDevice;
     private String op;
-    private String param;
+    private JSONObject param;
     
     public String getId() {
         return id;
@@ -28,10 +30,10 @@ public class RequestModel {
     public void setOp(String op) {
         this.op = op;
     }
-    public String getParam() {
+    public JSONObject getParam() {
         return param;
     }
-    public void setParam(String param) {
+    public void setParam(JSONObject param) {
         this.param = param;
     }
 }

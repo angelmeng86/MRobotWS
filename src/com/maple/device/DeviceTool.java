@@ -20,7 +20,9 @@ public class DeviceTool {
                 sb.append(line);
                 sb.append('\n');
             }
-
+            if(sb.length() > 0) {
+            	sb.setLength(sb.length() - 1);
+            }
             // 使用exec执行不会等执行成功以后才返回,它会立即返回
             // 所以在某些情况下是很要命的(比如复制文件的时候)
             // 使用wairFor()可以等待命令执行完成以后才返回
