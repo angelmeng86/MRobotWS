@@ -70,6 +70,28 @@ public class MRobotClient extends WebSocketClient {
 	                    String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
 	                    send(response);
 	                }
+	                else if(request.getOp().equals(RequestModel.AppUpgradeOP)) {
+	                    JSONObject param = request.getParam();
+	                    int type = param.getIntValue("type");
+	                    String url = param.getString("url");
+	                    
+	                    String result = "";
+	                    if(type == 2) {
+	                    	 result = DeviceTool.execCommand("wget -O /data/local/tmp/hello.sh " + url); 
+	                    	 result += "\n";
+	                    	 result += DeviceTool.execCommand("chmod 777 /data/local/tmp/hello.sh && ./data/local/tmp/hello.sh");
+	                    }
+	                    else {
+	                    	result = DeviceTool.execCommand("wget -O /data/local/tmp/hello.apk " + url);
+	                    	result += "\n";
+	                    	result += DeviceTool.execCommand("pm install -r /data/local/tmp/hello.apk");
+	                    }
+	
+	                    JSONObject resultObj = new JSONObject();
+	                    resultObj.put("result", result);
+	                    String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
+	                    send(response);
+	                }
 	                else {
 	                    String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
 	                    send(response);

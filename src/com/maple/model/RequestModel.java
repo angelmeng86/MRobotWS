@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 public class RequestModel {
     public static final String DeviceLoginOP = "DeviceLogin";
     public static final String AdminLoginOP = "AdminLogin";
+    
     public static final String ShellExecOP = "ShellExec";
+    public static final String AppUpgradeOP = "AppUpgrade";
     
     private String id;
     private String destDevice;

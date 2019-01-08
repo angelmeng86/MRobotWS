@@ -109,8 +109,8 @@ public class MRobotServer extends WebSocketServer {
 	                    }
 	                }
 	                else {
-	                    if(request.getDestDevice() != null && 
-	                    		request.getOp().equals(RequestModel.ShellExecOP)) {
+	                    if(request.getDestDevice() != null /*&& 
+	                    		request.getOp().equals(RequestModel.ShellExecOP)*/) {
 	                    	boolean finded = false;
 	                    	for(Entry<WebSocket, ConnSession> s : sessions.entrySet()) {
                                 if(s.getValue().getType() == ConnSession.DeviceType && s.getValue().getDeviceId().equals(request.getDestDevice())) {
