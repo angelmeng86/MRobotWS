@@ -54,68 +54,75 @@ public class MRobotClient extends WebSocketClient {
     }
 
     @Override
-    public void onMessage(String message) {
-        System.out.println("received message: " + message);
-        try {
-        	if(logined) {
-        		RequestModel request = JSON.parseObject(message, RequestModel.class);
-	            if(request != null && request.getOp() != null) {
-	                if(request.getOp().equals(RequestModel.ShellExecOP)) {
-	                    JSONObject param = request.getParam();
-	                    String cmd = param.getString("cmd");
-	                    String result = DeviceTool.execCommand(cmd);
-	
-	                    JSONObject resultObj = new JSONObject();
-	                    resultObj.put("result", result);
-	                    String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
-	                    send(response);
-	                }
-	                else if(request.getOp().equals(RequestModel.AppUpgradeOP)) {
-	                    JSONObject param = request.getParam();
-	                    int type = param.getIntValue("type");
-	                    String url = param.getString("url");
-	                    
-	                    String result = "";
-	                    if(type == 2) {
-	                    	 result = DeviceTool.execCommand("wget -O /data/local/tmp/hello.sh " + url); 
-	                    	 result += "\n";
-	                    	 result += DeviceTool.execCommand("chmod 777 /data/local/tmp/hello.sh && ./data/local/tmp/hello.sh");
-	                    }
-	                    else {
-	                    	result = DeviceTool.execCommand("wget -O /data/local/tmp/hello.apk " + url);
-	                    	result += "\n";
-	                    	result += DeviceTool.execCommand("pm install -r /data/local/tmp/hello.apk");
-	                    }
-	
-	                    JSONObject resultObj = new JSONObject();
-	                    resultObj.put("result", result);
-	                    String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
-	                    send(response);
-	                }
-	                else {
-	                    String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
-	                    send(response);
-	                }
-	            }
-	            else {
-	                System.out.println("parse request error.");
-	            }
-        	}
-        	else {
-        		ResponseModel response = JSON.parseObject(message, ResponseModel.class);
-	            if(response != null && response.getCode() == 0) {
-	            	logined = true;
-	            	System.out.println("login success.");
-	            }
-	            else {
-	            	running = false;
-	            }
-        	}
-        }
-        catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("parse request error.");
-        }
+    public void onMessage(String msg) {
+        System.out.println("received message: " + msg);
+        final String message = msg;
+        new Thread() {
+            public void run() {
+                try {
+                    if(logined) {
+                        RequestModel request = JSON.parseObject(message, RequestModel.class);
+                        if(request != null && request.getOp() != null) {
+                            if(request.getOp().equals(RequestModel.ShellExecOP)) {
+                                JSONObject param = request.getParam();
+                                String cmd = param.getString("cmd");
+                                String result = DeviceTool.execCommand(cmd);
+            
+                                JSONObject resultObj = new JSONObject();
+                                resultObj.put("result", result);
+                                String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
+                                send(response);
+                            }
+                            else if(request.getOp().equals(RequestModel.AppUpgradeOP)) {
+                                JSONObject param = request.getParam();
+                                int type = param.getIntValue("type");
+                                String url = param.getString("url");
+                                
+                                String result = "";
+                                if(type == 2) {
+                                     result = DeviceTool.execCommand("wget -O /data/local/tmp/hello.sh -nv " + url); 
+                                     result += "\n";
+                                     result += DeviceTool.execCommand("chmod 777 /data/local/tmp/hello.sh");
+                                     result += "\n";
+                                     result += DeviceTool.execCommand("/data/local/tmp/hello.sh");
+                                }
+                                else {
+                                    result = DeviceTool.execCommand("wget -O /data/local/tmp/hello.apk -nv " + url);
+                                    result += "\n";
+                                    result += DeviceTool.execCommand("pm install -r /data/local/tmp/hello.apk");
+                                }
+            
+                                JSONObject resultObj = new JSONObject();
+                                resultObj.put("result", result);
+                                String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
+                                send(response);
+                            }
+                            else {
+                                String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
+                                send(response);
+                            }
+                        }
+                        else {
+                            System.out.println("parse request error.");
+                        }
+                    }
+                    else {
+                        ResponseModel response = JSON.parseObject(message, ResponseModel.class);
+                        if(response != null && response.getCode() == 0) {
+                            logined = true;
+                            System.out.println("login success.");
+                        }
+                        else {
+                            running = false;
+                        }
+                    }
+                }
+                catch(Exception e) {
+                    e.printStackTrace();
+                    System.out.println("parse request error.");
+                }
+            }
+        }.start();
         
     }
 
