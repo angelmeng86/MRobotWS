@@ -9,7 +9,7 @@ public class RmiClient {
 	public static void main(String[] args) {
         // 建立连接
         CallHandler callHandler = new CallHandler();
-        String remoteHost = "127.0.0.1";
+        String remoteHost = "192.168.31.88";
         int port = 8099;
         Client client = null;
         try {
