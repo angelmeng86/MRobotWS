@@ -9,4 +9,10 @@ import java.util.Date;
 public interface LocalMessageInterface {
     String sayHello(String name);
     Date getDate();
+    
+    String pushMessage(String message);
+    String forwardMessage(String message);
+
+    String getUserInfo();
+    String userLogin(String userName, String pwd);
 }

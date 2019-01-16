@@ -9,6 +9,9 @@ public class RequestModel {
     public static final String ShellExecOP = "ShellExec";
     public static final String AppUpgradeOP = "AppUpgrade";
     
+    public static final String PushMessageOP = "PushMessage";
+    public static final String ForwardMessageOP = "ForwardMessage";
+    
     private String id;
     private String destDevice;
     private String op;

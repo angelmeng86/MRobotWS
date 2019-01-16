@@ -5,14 +5,19 @@ import com.alibaba.fastjson.JSONObject;
 import com.maple.device.DeviceTool;
 import com.maple.model.RequestModel;
 import com.maple.model.ResponseModel;
+import com.maple.rmi.LocalMessageInterface;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.handshake.ServerHandshake;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+
+import lipermi.handler.CallHandler;
+import lipermi.net.Client;
 
 public class MRobotClient extends WebSocketClient {
 
@@ -97,6 +102,17 @@ public class MRobotClient extends WebSocketClient {
                                 String response = DataUtils.jsonResponse(request.getId(), 0, null, resultObj);
                                 send(response);
                             }
+                            else if(request.getOp().equals(RequestModel.ForwardMessageOP)) {
+                                String result = callRemoteMessage(request.getParam().toJSONString());
+                                if(result == null) {
+                                    String response = DataUtils.jsonResponse(request.getId(), -1, "RPC通信失败");
+                                    send(response);
+                                }
+                                else {
+                                    String response = DataUtils.jsonResponse(request.getId(), 0, null, JSON.parseObject(result));
+                                    send(response);
+                                }
+                            }
                             else {
                                 String response = DataUtils.jsonResponse(request.getId(), -1, "op无效");
                                 send(response);
@@ -124,6 +140,21 @@ public class MRobotClient extends WebSocketClient {
             }
         }.start();
         
+    }
+    
+    public static String callRemoteMessage(String json) {
+        String remoteHost = "127.0.0.1";
+        int port = 8099;
+        Client client = null;
+        try {
+            CallHandler callHandler = new CallHandler();
+            client = new Client(remoteHost, port, callHandler);
+            LocalMessageInterface remoteObj = (LocalMessageInterface) client.getGlobal(LocalMessageInterface.class);
+            return remoteObj.forwardMessage(json);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
