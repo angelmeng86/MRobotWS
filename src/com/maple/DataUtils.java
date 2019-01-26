@@ -27,7 +27,7 @@ public class DataUtils {
         return JSON.toJSONString(model);
     }
     
-    public static String jsonRequest(String id, String op, JSONObject jsonData, String destDevice) {
+    public static String jsonRequest(String id, int op, JSONObject jsonData, String destDevice) {
         RequestModel model = new RequestModel();
         model.setDestDevice(destDevice);
         model.setOp(op);
@@ -37,7 +37,7 @@ public class DataUtils {
         return JSON.toJSONString(model);
     }
     
-    public static String jsonRequest(String id, String op, JSONObject jsonData) {
+    public static String jsonRequest(String id, int op, JSONObject jsonData) {
         return jsonRequest(id, op, jsonData, null);
     }
 }

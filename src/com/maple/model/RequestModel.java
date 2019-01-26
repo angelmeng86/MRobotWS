@@ -3,18 +3,16 @@ package com.maple.model;
 import com.alibaba.fastjson.JSONObject;
 
 public class RequestModel {
-    public static final String DeviceLoginOP = "DeviceLogin";
-    public static final String AdminLoginOP = "AdminLogin";
+    public static final int DeviceLoginOP = 2;
+    public static final int AdminLoginOP = 1;
     
-    public static final String ShellExecOP = "ShellExec";
-    public static final String AppUpgradeOP = "AppUpgrade";
+    public static final int ShellExecOP = 3;
+    public static final int AppUpgradeOP = 4;
     
-    public static final String PushMessageOP = "PushMessage";
-    public static final String ForwardMessageOP = "ForwardMessage";
     
     private String id;
     private String destDevice;
-    private String op;
+    private int op;
     private JSONObject param;
     
     public String getId() {
@@ -29,10 +27,10 @@ public class RequestModel {
     public void setDestDevice(String destDevice) {
         this.destDevice = destDevice;
     }
-    public String getOp() {
+    public int getOp() {
         return op;
     }
-    public void setOp(String op) {
+    public void setOp(int op) {
         this.op = op;
     }
     public JSONObject getParam() {
