@@ -36,25 +36,25 @@ public class MRobotServer extends WebSocketServer {
 		// client
 		// broadcast( "new connection: " + handshake.getResourceDescriptor() ); //This
 		// method sends a message to all clients connected
-		System.out.println("new connection to " + conn.getRemoteSocketAddress());
+		System.out.println(DataUtils.getDate() + "new connection to " + conn.getRemoteSocketAddress());
 	}
 
 	@Override
 	public void onClose(WebSocket conn, int code, String reason, boolean remote) {
 		sessions.remove(conn);
-		System.out.println(
+		System.out.println(DataUtils.getDate() + 
 				"closed " + conn.getRemoteSocketAddress() + " with exit code " + code + " additional info: " + reason);
 	}
 
 	@Override
 	public void onMessage(WebSocket conn, String message) {
-		System.out.println("received message from " + conn.getRemoteSocketAddress() + ": " + message);
+		System.out.println(DataUtils.getDate() + "received message from " + conn.getRemoteSocketAddress() + ": " + message);
 		try {
 			ConnSession session = sessions.get(conn);
 			if (session == null || session.getType() == ConnSession.AdminType) {// 尚未登录或者管理员才解析请求
 				RequestModel request = JSON.parseObject(message, RequestModel.class);
 				if (request == null) {
-					System.out.println("parse request error.");
+					System.out.println(DataUtils.getDate() + "parse request error.");
 					return;
 				}
 				if (session == null) {
@@ -161,33 +161,33 @@ public class MRobotServer extends WebSocketServer {
 					}
 					if (!finded) {
 						// TODO 服务端响应处理
-						System.out.println("服务端响应处理");
+						System.out.println(DataUtils.getDate() + "服务端响应处理");
 					}
 				} else {
-					System.out.println("parse request error.");
+					System.out.println(DataUtils.getDate() + "parse request error.");
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("parse error.");
+			System.out.println(DataUtils.getDate() + "parse error.");
 		}
 
 	}
 
 	@Override
 	public void onMessage(WebSocket conn, ByteBuffer message) {
-		System.out.println("received ByteBuffer from " + conn.getRemoteSocketAddress());
+		System.out.println(DataUtils.getDate() + "received ByteBuffer from " + conn.getRemoteSocketAddress());
 	}
 
 	@Override
 	public void onError(WebSocket conn, Exception ex) {
-		System.err.println(
+		System.err.println(DataUtils.getDate() + 
 				"an error occured on connection " + conn == null ? "null" : conn.getRemoteSocketAddress() + ":" + ex);
 	}
 
 	@Override
 	public void onStart() {
-		System.out.println("server started successfully");
+		System.out.println(DataUtils.getDate() + "server started successfully");
 	}
 
 	public static void main(String[] args) {

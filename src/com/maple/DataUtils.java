@@ -5,9 +5,18 @@ import com.alibaba.fastjson.JSONObject;
 import com.maple.model.RequestModel;
 import com.maple.model.ResponseModel;
 
+import java.text.SimpleDateFormat;
 import java.util.UUID;
 
 public class DataUtils {
+    
+    private static SimpleDateFormat time = new SimpleDateFormat("[yyyy-MM-dd HH:mm:ss] ");
+    public static String getDate() {
+        return time.format(new java.util.Date());
+    }
+    
+    
+   
     
     public static String getUUID32(){
         return UUID.randomUUID().toString().replace("-", "").toLowerCase();

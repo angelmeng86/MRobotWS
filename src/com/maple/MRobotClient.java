@@ -39,12 +39,12 @@ public class MRobotClient extends WebSocketClient {
 		data.put("deviceId", DeviceTool.getDeviceId());
 		String request = DataUtils.jsonRequest(DataUtils.getUUID32(), RequestModel.DeviceLoginOP, data);
 		send(request);
-		System.out.println("new connection opened");
+		System.out.println(DataUtils.getDate() + "new connection opened");
 	}
 
 	@Override
 	public void onClose(int code, String reason, boolean remote) {
-		System.out.println("closed with exit code " + code + " additional info: " + reason);
+		System.out.println(DataUtils.getDate() + "closed with exit code " + code + " additional info: " + reason);
 		new Thread() {
 			public void run() {
 				try {
@@ -60,7 +60,7 @@ public class MRobotClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(String msg) {
-		System.out.println("received message: " + msg);
+		System.out.println(DataUtils.getDate() + "received message: " + msg);
 		final String message = msg;
 		new Thread() {
 			public void run() {
@@ -68,7 +68,7 @@ public class MRobotClient extends WebSocketClient {
 					if (logined) {
 						RequestModel request = JSON.parseObject(message, RequestModel.class);
 						if (request == null) {
-							System.out.println("parse request error.");
+							System.out.println(DataUtils.getDate() + "parse request error.");
 							return;
 						}
 						switch (request.getOp()) {
@@ -126,14 +126,14 @@ public class MRobotClient extends WebSocketClient {
 						ResponseModel response = JSON.parseObject(message, ResponseModel.class);
 						if (response != null && response.getCode() == 0) {
 							logined = true;
-							System.out.println("login success.");
+							System.out.println(DataUtils.getDate() + "login success.");
 						} else {
 							running = false;
 						}
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					System.out.println("parse request error.");
+					System.out.println(DataUtils.getDate() + "parse request error.");
 				}
 			}
 		}.start();
@@ -157,18 +157,18 @@ public class MRobotClient extends WebSocketClient {
 
 	@Override
 	public void onMessage(ByteBuffer message) {
-		System.out.println("received ByteBuffer");
+		System.out.println(DataUtils.getDate() + "received ByteBuffer");
 	}
 
 	@Override
 	public void onError(Exception ex) {
-		System.err.println("an error occurred:" + ex);
+		System.err.println(DataUtils.getDate() + "an error occurred:" + ex);
 	}
 
 	public static void main(String[] args) throws URISyntaxException, InterruptedException {
-		System.out.println("MRobotClient is run");
-		System.out.println("DeviceId:" + DeviceTool.getDeviceId());
-		System.out.println("DeviceType:" + DeviceTool.getDeviceType());
+		System.out.println(DataUtils.getDate() + "MRobotClient is run");
+		System.out.println(DataUtils.getDate() + "DeviceId:" + DeviceTool.getDeviceId());
+		System.out.println(DataUtils.getDate() + "DeviceType:" + DeviceTool.getDeviceType());
 
 		MRobotClient client = new MRobotClient(new URI("ws://www.ucicloud.com:8085"));
 		client.connect();
@@ -176,7 +176,7 @@ public class MRobotClient extends WebSocketClient {
 			Thread.sleep(1000);
 		}
 
-		System.out.println("MRobotClient exit");
+		System.out.println(DataUtils.getDate() + "MRobotClient exit");
 	}
 
 }
