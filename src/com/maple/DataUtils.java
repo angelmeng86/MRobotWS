@@ -15,9 +15,6 @@ public class DataUtils {
         return time.format(new java.util.Date());
     }
     
-    
-   
-    
     public static String getUUID32(){
         return UUID.randomUUID().toString().replace("-", "").toLowerCase();
     }
@@ -36,7 +33,7 @@ public class DataUtils {
         return JSON.toJSONString(model);
     }
     
-    public static String jsonRequest(String id, int op, JSONObject jsonData, String destDevice) {
+    public static String jsonRequest(String id, String op, JSONObject jsonData, String destDevice) {
         RequestModel model = new RequestModel();
         model.setDestDevice(destDevice);
         model.setOp(op);
@@ -46,7 +43,7 @@ public class DataUtils {
         return JSON.toJSONString(model);
     }
     
-    public static String jsonRequest(String id, int op, JSONObject jsonData) {
+    public static String jsonRequest(String id,  String op, JSONObject jsonData) {
         return jsonRequest(id, op, jsonData, null);
     }
 }
